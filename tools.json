@@ -1,0 +1,15 @@
+{
+  "tools": [
+    { "name": "7-Zip", "wingetId": "7zip.7zip", "enabled": true },
+    { "name": "Visual C++ Redistributable x64", "wingetId": "Microsoft.VCRedist.2015+.x64", "enabled": true },
+    { "name": "Visual C++ Redistributable x86", "wingetId": "Microsoft.VCRedist.2015+.x86", "enabled": true },
+    { "name": ".NET 9 Desktop Runtime", "wingetId": "Microsoft.DotNet.DesktopRuntime.9", "enabled": true },
+    { "name": "Notepad++", "wingetId": "Notepad++.Notepad++", "enabled": true },
+    { "name": "Amazon Corretto (JDK 21)", "wingetId": "Amazon.Corretto.21.JDK", "enabled": true },
+    { "name": "Python 3.13", "wingetId": "Python.Python.3.13", "enabled": true },
+    { "name": "Go", "wingetId": "GoLang.Go", "enabled": true },
+    { "name": "Rust", "wingetId": "Rustlang.Rustup", "enabled": true },
+    { "name": "Visual Studio Build Tools (C++)", "wingetId": "Microsoft.VisualStudio.2022.BuildTools", "override": "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --wait", "enabled": true },
+    { "name": "Sysinternals Suite", "wingetId": "Microsoft.Sysinternals.Suite", "enabled": true }
+  ]
+}

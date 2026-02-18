@@ -1,0 +1,42 @@
+# Generated files
+*.wsb
+scripts/tools.json
+
+# Binaries / installers
+*.exe
+*.msi
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+*.msix
+*.msixbundle
+*.appx
+*.appxbundle
+*.cab
+*.iso
+*.img
+*.dll
+*.sys
+*.nupkg
+
+# Claude Code
+.claude/
+CLAUDE.md
+
+# IDE / editor
+.vscode/
+.idea/
+*.code-workspace
+*.suo
+*.user
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Temp / logs
+*.log
+*.tmp

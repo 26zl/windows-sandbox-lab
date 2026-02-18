@@ -1,0 +1,34 @@
+name: Lint
+
+on:
+  push:
+    paths: ["**/*.ps1"]
+  pull_request:
+    paths: ["**/*.ps1"]
+
+permissions:
+  contents: read
+
+jobs:
+  psscriptanalyzer:
+    name: PSScriptAnalyzer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $results = Get-ChildItem -Path . -Filter *.ps1 -Recurse |
+            ForEach-Object { Invoke-ScriptAnalyzer -Path $_.FullName -Severity Warning,Error }
+
+          if ($results) {
+            $results | Format-Table -AutoSize
+            throw "$($results.Count) issue(s) found."
+          }
+
+          Write-Host "No issues found." -ForegroundColor Green

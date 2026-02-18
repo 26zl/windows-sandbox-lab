@@ -1,0 +1,19 @@
+<Configuration>
+  <Networking>Enable</Networking>
+  <MemoryInMB>12288</MemoryInMB>
+  <VGpu>Disable</VGpu>
+  <AudioInput>Disable</AudioInput>
+  <VideoInput>Disable</VideoInput>
+  <ProtectedClient>Enable</ProtectedClient>
+  <PrinterRedirection>Disable</PrinterRedirection>
+  <ClipboardRedirection>Enable</ClipboardRedirection>
+  <MappedFolders>
+    <MappedFolder>
+      <HostFolder>__SANDBOX__\scripts</HostFolder>
+      <ReadOnly>true</ReadOnly>
+    </MappedFolder>
+  </MappedFolders>
+  <LogonCommand>
+    <Command>powershell.exe -ExecutionPolicy Bypass -File C:\Users\WDAGUtilityAccount\Desktop\scripts\autostart.ps1</Command>
+  </LogonCommand>
+</Configuration>
