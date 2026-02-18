@@ -2,12 +2,21 @@
 
 Disposable Windows Sandbox for testing software you'd rather not install on your main machine. One config file, one command, plug and play.
 
+## Prerequisites
+
+- Windows 10/11 Pro or Enterprise
+- [Windows Sandbox](https://learn.microsoft.com/en-us/windows/security/application-security/application-isolation/windows-sandbox/windows-sandbox-overview) enabled
+
 ## Quick Start
 
 ```powershell
+git clone https://github.com/26zl/windows-sandbox.git
+cd windows-sandbox
 .\setup.ps1         # generate sandbox.wsb (instant)
 start sandbox.wsb   # launch sandbox — winget installs everything automatically
 ```
+
+> Setup takes a few minutes inside the sandbox. A PowerShell window shows progress — wait until it says **"Sandbox ready"** before you start.
 
 ## Tools
 

@@ -7,6 +7,15 @@ $ProgressPreference = "SilentlyContinue"
 $scriptDir = $PSScriptRoot
 $logFile = Join-Path $env:TEMP "sandbox-install.log"
 
+# Wait for network before starting (LogonCommand can run before network is ready)
+$maxWait = 60
+$waited = 0
+while ($waited -lt $maxWait) {
+    if (Test-Connection -ComputerName "github.com" -Count 1 -Quiet -ErrorAction SilentlyContinue) { break }
+    Start-Sleep -Seconds 2
+    $waited += 2
+}
+
 function Write-SetupLog {
     param(
         [string]$Level,
@@ -26,6 +35,13 @@ function Write-SetupLog {
 
 # Phase 1: Environment setup
 Write-SetupLog "INFO" "=== Phase 1: Environment setup ==="
+
+# Force English UI
+Set-WinUILanguageOverride -Language "en-US"
+Set-WinSystemLocale -SystemLocale "en-US"
+Set-Culture -CultureInfo "en-US"
+Set-WinHomeLocation -GeoId 244
+Write-SetupLog "OK" "Language forced to English (en-US)"
 
 # Fix slow MSI installs
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\CI\Policy" /v "VerifiedAndReputablePolicyState" /t REG_DWORD /d 0 /f | Out-Null
@@ -109,7 +125,7 @@ Set-ItemProperty -Path $mnPath -Name "*" -Value "*" -Type String
 Write-SetupLog "OK" "PowerShell module logging enabled"
 
 # Process creation auditing with command-line capture
-auditpol /set /subcategory:"Process Creation" /success:enable /failure:enable | Out-Null
+auditpol /set /subcategory:"{0CCE922B-69AE-11D9-BED3-505054503030}" /success:enable /failure:enable | Out-Null
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\Audit" /v "ProcessCreationIncludeCmdLine_Enabled" /t REG_DWORD /d 1 /f | Out-Null
 Write-SetupLog "OK" "Process creation auditing enabled"
 
@@ -138,7 +154,7 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         # VCLibs dependency
         $vcLibsPath = Join-Path $env:TEMP "Microsoft.VCLibs.appx"
         Invoke-WebRequest -Uri "https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx" -OutFile $vcLibsPath
-        Add-AppxPackage -Path $vcLibsPath
+        Add-AppxPackage -Path $vcLibsPath -ErrorAction Stop
         Write-SetupLog "OK" "VCLibs installed"
 
         # UI.Xaml dependency (from NuGet)
@@ -146,13 +162,19 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         $uiXamlDir = Join-Path $env:TEMP "microsoft.ui.xaml"
         Invoke-WebRequest -Uri "https://www.nuget.org/api/v2/package/Microsoft.UI.Xaml/2.8.6" -OutFile $uiXamlZip
         Expand-Archive -Path $uiXamlZip -DestinationPath $uiXamlDir -Force
-        Add-AppxPackage -Path (Join-Path $uiXamlDir "tools\AppX\x64\Release\Microsoft.UI.Xaml.2.8.appx")
+        Add-AppxPackage -Path (Join-Path $uiXamlDir "tools\AppX\x64\Release\Microsoft.UI.Xaml.2.8.appx") -ErrorAction Stop
         Write-SetupLog "OK" "UI.Xaml installed"
+
+        # Windows App Runtime dependency (required by latest winget)
+        $warPath = Join-Path $env:TEMP "windowsappsdk-runtime.exe"
+        Invoke-WebRequest -Uri "https://aka.ms/windowsappsdk/1.8/latest/windowsappsdk-runtime-installer-x64" -OutFile $warPath
+        Start-Process -FilePath $warPath -ArgumentList "/quiet /norestart" -Wait
+        Write-SetupLog "OK" "Windows App Runtime installed"
 
         # Winget itself
         $wingetPath = Join-Path $env:TEMP "winget.msixbundle"
         Invoke-WebRequest -Uri "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $wingetPath
-        Add-AppxPackage -Path $wingetPath
+        Add-AppxPackage -Path $wingetPath -ErrorAction Stop
         Write-SetupLog "OK" "winget installed"
 
         # Refresh PATH so winget is available in this session
