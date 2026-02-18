@@ -24,7 +24,7 @@ jobs:
         shell: pwsh
         run: |
           $results = Get-ChildItem -Path . -Filter *.ps1 -Recurse |
-            ForEach-Object { Invoke-ScriptAnalyzer -Path $_.FullName -Severity Warning,Error }
+            ForEach-Object { Invoke-ScriptAnalyzer -Path $_.FullName -Settings .psscriptanalyzer.psd1 -Severity Warning,Error }
 
           if ($results) {
             $results | Format-Table -AutoSize
