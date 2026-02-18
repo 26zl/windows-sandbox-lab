@@ -14,6 +14,6 @@
     </MappedFolder>
   </MappedFolders>
   <LogonCommand>
-    <Command>powershell.exe -ExecutionPolicy Bypass -NoExit -File C:\Users\WDAGUtilityAccount\Desktop\scripts\autostart.ps1</Command>
+    <Command>C:\Users\WDAGUtilityAccount\Desktop\scripts\launch.cmd</Command>
   </LogonCommand>
 </Configuration>

@@ -94,7 +94,7 @@ Write-SetupLog "OK" "PowerShell/CMD context menu added"
 # New Text Document in context menu
 reg add "HKEY_CLASSES_ROOT\txtfile" /ve /d "Text Document" /f | Out-Null
 reg add "HKEY_CLASSES_ROOT\.txt\ShellNew" /f | Out-Null
-reg --% add "HKEY_CLASSES_ROOT\.txt\ShellNew" /v "NullFile" /t REG_SZ /d "" /f
+cmd /c 'reg add "HKEY_CLASSES_ROOT\.txt\ShellNew" /v "NullFile" /t REG_SZ /d "" /f' 2>&1 | Out-Null
 reg add "HKEY_CLASSES_ROOT\.txt\ShellNew" /v "ItemName" /t REG_SZ /d "New Text Document" /f | Out-Null
 
 # New PowerShell Script in context menu
@@ -103,7 +103,7 @@ reg add "HKEY_CLASSES_ROOT\ps1file" /ve /d "PowerShell Script" /f | Out-Null
 reg add "HKEY_CLASSES_ROOT\ps1file\DefaultIcon" /ve /d "%SystemRoot%\System32\imageres.dll,-5372" /f | Out-Null
 reg add "HKEY_CLASSES_ROOT\.ps1\ShellNew" /ve /d "ps1file" /f | Out-Null
 reg add "HKEY_CLASSES_ROOT\.ps1\ShellNew" /f | Out-Null
-reg --% add "HKEY_CLASSES_ROOT\.ps1\ShellNew" /v "NullFile" /t REG_SZ /d "" /f
+cmd /c 'reg add "HKEY_CLASSES_ROOT\.ps1\ShellNew" /v "NullFile" /t REG_SZ /d "" /f' 2>&1 | Out-Null
 reg add "HKEY_CLASSES_ROOT\.ps1\ShellNew" /v "ItemName" /t REG_SZ /d "script" /f | Out-Null
 Write-SetupLog "OK" "Shell new items added (.txt, .ps1)"
 
@@ -151,30 +151,13 @@ Write-SetupLog "INFO" "=== Phase 2: Installing winget ==="
 
 if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
     try {
-        # VCLibs dependency
-        $vcLibsPath = Join-Path $env:TEMP "Microsoft.VCLibs.appx"
-        Invoke-WebRequest -Uri "https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx" -OutFile $vcLibsPath
-        Add-AppxPackage -Path $vcLibsPath -ErrorAction Stop
-        Write-SetupLog "OK" "VCLibs installed"
+        Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force | Out-Null
+        Write-SetupLog "OK" "NuGet provider installed"
 
-        # UI.Xaml dependency (from NuGet)
-        $uiXamlZip = Join-Path $env:TEMP "microsoft.ui.xaml.zip"
-        $uiXamlDir = Join-Path $env:TEMP "microsoft.ui.xaml"
-        Invoke-WebRequest -Uri "https://www.nuget.org/api/v2/package/Microsoft.UI.Xaml/2.8.6" -OutFile $uiXamlZip
-        Expand-Archive -Path $uiXamlZip -DestinationPath $uiXamlDir -Force
-        Add-AppxPackage -Path (Join-Path $uiXamlDir "tools\AppX\x64\Release\Microsoft.UI.Xaml.2.8.appx") -ErrorAction Stop
-        Write-SetupLog "OK" "UI.Xaml installed"
+        Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery -ErrorAction Stop
+        Write-SetupLog "OK" "Microsoft.WinGet.Client module installed"
 
-        # Windows App Runtime dependency (required by latest winget)
-        $warPath = Join-Path $env:TEMP "windowsappsdk-runtime.exe"
-        Invoke-WebRequest -Uri "https://aka.ms/windowsappsdk/1.8/latest/windowsappsdk-runtime-installer-x64" -OutFile $warPath
-        Start-Process -FilePath $warPath -ArgumentList "/quiet /norestart" -Wait
-        Write-SetupLog "OK" "Windows App Runtime installed"
-
-        # Winget itself
-        $wingetPath = Join-Path $env:TEMP "winget.msixbundle"
-        Invoke-WebRequest -Uri "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $wingetPath
-        Add-AppxPackage -Path $wingetPath -ErrorAction Stop
+        Repair-WinGetPackageManager -Latest -ErrorAction Stop
         Write-SetupLog "OK" "winget installed"
 
         # Refresh PATH so winget is available in this session
@@ -184,7 +167,6 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
     }
     catch {
         Write-SetupLog "FAIL" "winget installation failed: $_"
-        Read-Host "Press Enter to close"
         exit 1
     }
 }
@@ -198,7 +180,6 @@ Write-SetupLog "INFO" "=== Phase 3: Tool installation ==="
 $configPath = Join-Path $scriptDir "tools.json"
 if (-not (Test-Path $configPath)) {
     Write-SetupLog "FAIL" "tools.json not found at $configPath"
-    Read-Host "Press Enter to close"
     exit 1
 }
 
@@ -216,10 +197,10 @@ foreach ($tool in $tools) {
 
     try {
         if ($tool.override) {
-            $null = & winget install --id $tool.wingetId --silent --accept-package-agreements --accept-source-agreements --override $tool.override 2>&1
+            $null = & winget install --id $tool.wingetId --source winget --silent --accept-package-agreements --accept-source-agreements --override $tool.override 2>&1
         }
         else {
-            $null = & winget install --id $tool.wingetId --silent --accept-package-agreements --accept-source-agreements 2>&1
+            $null = & winget install --id $tool.wingetId --source winget --silent --accept-package-agreements --accept-source-agreements 2>&1
         }
         if ($LASTEXITCODE -eq 0) {
             Write-SetupLog "OK" "$($tool.name) installed"
@@ -280,7 +261,7 @@ if ($sysmonExe -and (Test-Path $sysmonConfig)) {
     Write-SetupLog "OK" "Sysmon installed with SwiftOnSecurity config"
 }
 else {
-    Write-SetupLog "WARN" "Sysmon not found or config missing — skipping"
+    Write-SetupLog "WARN" "Sysmon not found or config missing - skipping"
 }
 
 # Summary
@@ -292,4 +273,4 @@ if ($failedTools.Count -gt 0) {
 Write-SetupLog "INFO" "Log: $logFile"
 Write-SetupLog "INFO" "=== Sandbox ready ==="
 
-Read-Host "Press Enter to close"
+Write-SetupLog "INFO" "Window kept open by -NoExit flag"
