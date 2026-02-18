@@ -2,9 +2,19 @@ name: Lint
 
 on:
   push:
-    paths: ["**/*.ps1"]
+    paths:
+      - "**/*.ps1"
+      - "tools.json"
+      - "sandbox.wsb.template"
+      - ".github/workflows/lint.yml"
+      - ".psscriptanalyzer.psd1"
   pull_request:
-    paths: ["**/*.ps1"]
+    paths:
+      - "**/*.ps1"
+      - "tools.json"
+      - "sandbox.wsb.template"
+      - ".github/workflows/lint.yml"
+      - ".psscriptanalyzer.psd1"
 
 permissions:
   contents: read
@@ -32,3 +42,29 @@ jobs:
           }
 
           Write-Host "No issues found." -ForegroundColor Green
+
+  validate-json:
+    name: Validate tools.json
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate tools.json schema
+        shell: pwsh
+        run: |
+          $config = Get-Content tools.json | ConvertFrom-Json
+          $errors = @()
+          foreach ($tool in $config.tools) {
+            $missing = @()
+            if (-not $tool.PSObject.Properties['name']) { $missing += 'name' }
+            if (-not $tool.PSObject.Properties['wingetId']) { $missing += 'wingetId' }
+            if (-not $tool.PSObject.Properties['enabled']) { $missing += 'enabled' }
+            if ($missing.Count -gt 0) {
+              $errors += "Tool '$($tool.name)' missing keys: $($missing -join ', ')"
+            }
+          }
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Host "ERROR: $_" -ForegroundColor Red }
+            throw "$($errors.Count) validation error(s) found."
+          }
+          Write-Host "tools.json is valid ($($config.tools.Count) tools defined)." -ForegroundColor Green

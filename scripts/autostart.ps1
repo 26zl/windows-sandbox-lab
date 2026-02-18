@@ -37,11 +37,16 @@ function Write-SetupLog {
 Write-SetupLog "INFO" "=== Phase 1: Environment setup ==="
 
 # Force English UI
-Set-WinUILanguageOverride -Language "en-US"
-Set-WinSystemLocale -SystemLocale "en-US"
-Set-Culture -CultureInfo "en-US"
-Set-WinHomeLocation -GeoId 244
-Write-SetupLog "OK" "Language forced to English (en-US)"
+try {
+    Set-WinUILanguageOverride -Language "en-US"
+    Set-WinSystemLocale -SystemLocale "en-US"
+    Set-Culture -CultureInfo "en-US"
+    Set-WinHomeLocation -GeoId 244
+    Write-SetupLog "OK" "Language forced to English (en-US)"
+}
+catch {
+    Write-SetupLog "FAIL" "Failed to set locale: $_"
+}
 
 # Fix slow MSI installs
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\CI\Policy" /v "VerifiedAndReputablePolicyState" /t REG_DWORD /d 0 /f | Out-Null
@@ -71,8 +76,8 @@ Write-SetupLog "OK" "Long path support enabled"
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Clipboard" -Name "EnableClipboardHistory" -Value 1 -Type DWord -Force
 Write-SetupLog "OK" "Clipboard history enabled"
 
-# Unrestricted execution policy
-try { Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope LocalMachine -ErrorAction Stop | Out-Null }
+# RemoteSigned execution policy (least-privilege that allows local scripts)
+try { Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -ErrorAction Stop | Out-Null }
 catch { Write-SetupLog "WARN" "Failed to set execution policy: $_" }
 
 # Dark mode
@@ -226,10 +231,22 @@ $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";
 "$env:LOCALAPPDATA\Microsoft\WindowsApps"
 
 # Download SwiftOnSecurity Sysmon config
+# To pin a known-good config, set this to the expected SHA256 hash (e.g. from a trusted build).
+# Leave empty to download without verification (hash will be logged for auditing).
+$sysmonConfigExpectedHash = ""
 $sysmonConfig = Join-Path $env:TEMP "sysmonconfig.xml"
+$sysmonConfigValid = $false
 try {
     Invoke-WebRequest -Uri "https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml" -OutFile $sysmonConfig
-    Write-SetupLog "OK" "Sysmon config downloaded"
+    $actualHash = (Get-FileHash -Path $sysmonConfig -Algorithm SHA256).Hash
+    if ($sysmonConfigExpectedHash -and $actualHash -ne $sysmonConfigExpectedHash) {
+        Write-SetupLog "WARN" "Sysmon config hash mismatch: expected=$sysmonConfigExpectedHash actual=$actualHash"
+        Write-SetupLog "WARN" "Skipping Sysmon config application due to hash mismatch"
+    }
+    else {
+        Write-SetupLog "OK" "Sysmon config downloaded (SHA256: $actualHash)"
+        $sysmonConfigValid = $true
+    }
 }
 catch {
     Write-SetupLog "FAIL" "Failed to download Sysmon config: $_"
@@ -256,12 +273,12 @@ else {
     }
 }
 
-if ($sysmonExe -and (Test-Path $sysmonConfig)) {
+if ($sysmonExe -and $sysmonConfigValid) {
     & $sysmonExe -accepteula -i $sysmonConfig 2>&1 | Out-Null
     Write-SetupLog "OK" "Sysmon installed with SwiftOnSecurity config"
 }
 else {
-    Write-SetupLog "WARN" "Sysmon not found or config missing - skipping"
+    Write-SetupLog "WARN" "Sysmon not found or config not valid - skipping"
 }
 
 # Summary
@@ -271,6 +288,11 @@ if ($failedTools.Count -gt 0) {
     Write-SetupLog "FAIL" "Failed: $($failedTools -join ', ')"
 }
 Write-SetupLog "INFO" "Log: $logFile"
-Write-SetupLog "INFO" "=== Sandbox ready ==="
+if ($failedTools.Count -eq 0) {
+    Write-SetupLog "INFO" "=== Sandbox ready ==="
+}
+else {
+    Write-SetupLog "WARN" "=== Sandbox setup completed with errors ==="
+}
 
 Write-SetupLog "INFO" "Window kept open by -NoExit flag"
