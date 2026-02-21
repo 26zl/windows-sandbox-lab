@@ -10,6 +10,14 @@
     { "name": "Go", "wingetId": "GoLang.Go", "enabled": true },
     { "name": "Rust", "wingetId": "Rustlang.Rustup", "enabled": true },
     { "name": "Visual Studio Build Tools (C++)", "wingetId": "Microsoft.VisualStudio.2022.BuildTools", "override": "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet --wait", "enabled": true },
+    { "name": "Git", "wingetId": "Git.Git", "enabled": true },
+    { "name": "Node.js (LTS)", "wingetId": "OpenJS.NodeJS.LTS", "enabled": true },
+    { "name": ".NET 9 SDK", "wingetId": "Microsoft.DotNet.SDK.9", "enabled": true },
+    { "name": "CMake", "wingetId": "Kitware.CMake", "enabled": true },
+    { "name": "Ruby 3.3", "wingetId": "RubyInstallerTeam.Ruby.3.3", "enabled": true },
+    { "name": "PHP 8.4", "wingetId": "PHP.PHP.8.4", "enabled": true },
+    { "name": "PowerShell 7", "wingetId": "Microsoft.PowerShell", "enabled": true },
+    { "name": "Zig", "wingetId": "zig.zig", "enabled": true },
     { "name": "Sysinternals Suite", "wingetId": "Microsoft.Sysinternals.Suite", "enabled": true }
   ]
 }

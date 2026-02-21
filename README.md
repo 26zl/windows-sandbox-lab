@@ -1,6 +1,6 @@
-# Windows Sandbox — Software Testing Environment
+# Windows Sandbox — Fast & Secure Software Testing
 
-Disposable Windows Sandbox for testing software you'd rather not install on your main machine. One config file, one command, plug and play.
+Disposable Windows Sandbox for fast and secure testing of software you'd rather not install on your main machine. Every session starts clean, runs isolated from your host, and is destroyed on close — nothing persists. One config file, one command, plug and play.
 
 ## Prerequisites
 
@@ -25,10 +25,10 @@ Configured in `tools.json`. Disable any tool with `"enabled": false`. Add new to
 | Category | Tools |
 | -------- | ----- |
 | **Editor** | Notepad++ |
-| **Languages** | Go, Rust, Python 3.13, Amazon Corretto (JDK 21) |
-| **Build tools** | Visual Studio Build Tools (C++ workload) |
-| **Utilities** | 7-Zip, Sysinternals Suite |
-| **Runtime** | VC++ Redist x64+x86, .NET 9 Desktop Runtime |
+| **Languages** | Go, Rust, Python 3.13, Amazon Corretto (JDK 21), Node.js LTS, Ruby 3.3, PHP 8.4, Zig |
+| **Build tools** | Visual Studio Build Tools (C++ workload), CMake |
+| **Utilities** | 7-Zip, Git, Sysinternals Suite |
+| **Runtime** | VC++ Redist x64+x86, .NET 9 Desktop Runtime, .NET 9 SDK, PowerShell 7 |
 
 All tools are installed via **winget** — always latest versions, no URLs to maintain.
 
