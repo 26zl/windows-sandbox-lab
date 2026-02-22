@@ -8,20 +8,6 @@ $scriptDir = $PSScriptRoot
 $logFile = Join-Path $env:TEMP "sandbox-install.log"
 $setupErrors = 0
 
-# Wait for network before starting (LogonCommand can run before network is ready)
-$maxWait = 60
-$waited = 0
-while ($waited -lt $maxWait) {
-    if (Test-Connection -ComputerName "github.com" -Count 1 -Quiet -ErrorAction SilentlyContinue) { break }
-    Start-Sleep -Seconds 2
-    $waited += 2
-}
-if ($waited -ge $maxWait) {
-    Write-SetupLog "FAIL" "Network not available after ${maxWait}s — cannot continue"
-    exit 1
-}
-Write-SetupLog "OK" "Network available"
-
 function Write-SetupLog {
     param(
         [string]$Level,
@@ -49,6 +35,20 @@ function Assert-ExitCode {
         $script:setupErrors++
     }
 }
+
+# Wait for network before starting (LogonCommand can run before network is ready)
+$maxWait = 60
+$waited = 0
+while ($waited -lt $maxWait) {
+    if (Test-Connection -ComputerName "github.com" -Count 1 -Quiet -ErrorAction SilentlyContinue) { break }
+    Start-Sleep -Seconds 2
+    $waited += 2
+}
+if ($waited -ge $maxWait) {
+    Write-SetupLog "FAIL" "Network not available after ${maxWait}s — cannot continue"
+    exit 1
+}
+Write-SetupLog "OK" "Network available"
 
 # Phase 1: Environment setup
 Write-SetupLog "INFO" "=== Phase 1: Environment setup ==="
@@ -97,8 +97,14 @@ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Clipboard" -Name "EnableClipboa
 Write-SetupLog "OK" "Clipboard history enabled"
 
 # RemoteSigned execution policy (least-privilege that allows local scripts)
-try { Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -ErrorAction Stop | Out-Null }
-catch { Write-SetupLog "WARN" "Failed to set execution policy: $_" }
+$currentPolicy = Get-ExecutionPolicy -Scope Process
+if ($currentPolicy -eq "Bypass" -or $currentPolicy -eq "Unrestricted") {
+    Write-SetupLog "OK" "Execution policy already $currentPolicy — skipping"
+}
+else {
+    try { Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -ErrorAction Stop | Out-Null }
+    catch { Write-SetupLog "WARN" "Failed to set execution policy: $_" }
+}
 
 # Dark mode
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0

@@ -16,7 +16,7 @@ cd windows-sandbox-dev
 start sandbox.wsb   # launch sandbox — winget installs everything automatically
 ```
 
-> Setup takes a few minutes inside the sandbox. A PowerShell window shows progress — wait until it says **"Sandbox ready"** before you start.
+> Setup takes around **10–15 minutes** inside the sandbox. A PowerShell window shows progress — wait until it says **"Sandbox ready"** before you start.
 
 ## Tools
 
