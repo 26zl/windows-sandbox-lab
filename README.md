@@ -10,8 +10,8 @@ Disposable Windows Sandbox for fast and secure testing of software you'd rather 
 ## Quick Start
 
 ```powershell
-git clone https://github.com/26zl/windows-sandbox.git
-cd windows-sandbox
+git clone https://github.com/26zl/windows-sandbox-dev.git
+cd windows-sandbox-dev
 .\setup.ps1         # generate sandbox.wsb (instant)
 start sandbox.wsb   # launch sandbox — winget installs everything automatically
 ```

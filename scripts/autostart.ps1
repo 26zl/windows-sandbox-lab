@@ -16,6 +16,11 @@ while ($waited -lt $maxWait) {
     Start-Sleep -Seconds 2
     $waited += 2
 }
+if ($waited -ge $maxWait) {
+    Write-SetupLog "FAIL" "Network not available after ${maxWait}s — cannot continue"
+    exit 1
+}
+Write-SetupLog "OK" "Network available"
 
 function Write-SetupLog {
     param(
@@ -63,7 +68,9 @@ catch {
 
 # Fix slow MSI installs
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\CI\Policy" /v "VerifiedAndReputablePolicyState" /t REG_DWORD /d 0 /f | Out-Null
-CiTool.exe --refresh --json | Out-Null
+if (Get-Command CiTool.exe -ErrorAction SilentlyContinue) {
+    CiTool.exe --refresh --json | Out-Null
+}
 
 # Show file extensions
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "HideFileExt" /t REG_DWORD /d 0 /f | Out-Null
@@ -269,8 +276,13 @@ foreach ($tool in $tools) {
         else {
             $null = & winget install --id $tool.wingetId --source winget --silent --accept-package-agreements --accept-source-agreements 2>&1
         }
-        if ($LASTEXITCODE -eq 0) {
-            Write-SetupLog "OK" "$($tool.name) installed"
+        if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq -1978335189 -or $LASTEXITCODE -eq -1978335188) {
+            if ($LASTEXITCODE -eq 0) {
+                Write-SetupLog "OK" "$($tool.name) installed"
+            }
+            else {
+                Write-SetupLog "OK" "$($tool.name) already installed"
+            }
             $succeeded++
         }
         else {
