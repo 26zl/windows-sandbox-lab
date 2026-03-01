@@ -1,6 +1,6 @@
-# Windows Sandbox — Fast & Secure Software Testing
+# Windows Sandbox — Disposable Software Testing
 
-Disposable Windows Sandbox for fast and secure testing of software you'd rather not install on your main machine. Every session starts clean, runs isolated from your host, and is destroyed on close — nothing persists. One config file, one command, plug and play.
+Disposable Windows Sandbox for testing software you'd rather not install on your main machine. Every session starts clean, runs isolated from your host, and is destroyed on close — nothing persists. One config file, one command, plug and play.
 
 ## Prerequisites
 
@@ -32,11 +32,11 @@ Configured in `tools.json`. Disable any tool with `"enabled": false`. Add new to
 
 All tools are installed via **winget** — always latest versions, no URLs to maintain.
 
-## Security Hardening
+## Monitoring & Logging
 
-Applied automatically on sandbox startup:
+Enabled automatically so you can see what software does inside the sandbox:
 
-- Sysmon with SwiftOnSecurity config
+- Sysmon with SwiftOnSecurity config — tracks process creation, network connections, file changes
 - PowerShell script block + module logging
 - Process creation auditing with command-line capture
 - Telemetry and Windows Error Reporting disabled
