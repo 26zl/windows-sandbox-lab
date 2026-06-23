@@ -1,0 +1,6 @@
+# Normalize line endings across platforms.
+* text=auto eol=lf
+
+# Batch files are CRLF on Windows.
+*.cmd text eol=crlf
+*.bat text eol=crlf

@@ -1,12 +1,12 @@
 <Configuration>
-  <Networking>Enable</Networking>
+  <Networking>__NETWORKING__</Networking>
   <MemoryInMB>12288</MemoryInMB>
   <VGpu>Disable</VGpu>
   <AudioInput>Disable</AudioInput>
   <VideoInput>Disable</VideoInput>
   <ProtectedClient>Enable</ProtectedClient>
   <PrinterRedirection>Disable</PrinterRedirection>
-  <ClipboardRedirection>Enable</ClipboardRedirection>
+  <ClipboardRedirection>__CLIPBOARD__</ClipboardRedirection>
   <MappedFolders>
     <MappedFolder>
       <HostFolder>__SANDBOX__\scripts</HostFolder>
@@ -14,6 +14,6 @@
     </MappedFolder>
   </MappedFolders>
   <LogonCommand>
-    <Command>C:\Users\WDAGUtilityAccount\Desktop\scripts\launch.cmd</Command>
+    <Command>C:\Users\WDAGUtilityAccount\Desktop\scripts\launch.cmd__LAUNCHARGS__</Command>
   </LogonCommand>
 </Configuration>

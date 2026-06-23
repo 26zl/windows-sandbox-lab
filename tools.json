@@ -1,10 +1,11 @@
 {
-  "tools": [
+  "default": [
     { "name": "7-Zip", "wingetId": "7zip.7zip", "enabled": true },
     { "name": "Visual C++ Redistributable x64", "wingetId": "Microsoft.VCRedist.2015+.x64", "enabled": true },
     { "name": "Visual C++ Redistributable x86", "wingetId": "Microsoft.VCRedist.2015+.x86", "enabled": true },
     { "name": ".NET 9 Desktop Runtime", "wingetId": "Microsoft.DotNet.DesktopRuntime.9", "enabled": true },
     { "name": "Notepad++", "wingetId": "Notepad++.Notepad++", "enabled": true },
+    { "name": "Visual Studio Code", "wingetId": "Microsoft.VisualStudioCode", "enabled": true },
     { "name": "Amazon Corretto (JDK 21)", "wingetId": "Amazon.Corretto.21.JDK", "enabled": true },
     { "name": "Python 3.13", "wingetId": "Python.Python.3.13", "enabled": true },
     { "name": "Go", "wingetId": "GoLang.Go", "enabled": true },
@@ -19,5 +20,65 @@
     { "name": "PowerShell 7", "wingetId": "Microsoft.PowerShell", "enabled": true },
     { "name": "Zig", "wingetId": "zig.zig", "enabled": true },
     { "name": "Sysinternals Suite", "wingetId": "Microsoft.Sysinternals.Suite", "enabled": true }
-  ]
+  ],
+  "profiles": {
+    "datascience": [
+      { "name": "Miniconda3", "wingetId": "Anaconda.Miniconda3", "enabled": true },
+      { "name": "uv (Python package manager)", "wingetId": "astral-sh.uv", "enabled": true },
+      { "name": "R", "wingetId": "RProject.R", "enabled": true },
+      { "name": "RStudio", "wingetId": "Posit.RStudio", "enabled": true },
+      { "name": "Visual Studio Code", "wingetId": "Microsoft.VisualStudioCode", "enabled": true },
+      { "name": "JupyterLab", "wingetId": "", "enabled": true, "source": "manual", "url": "uv tool install jupyterlab  (https://jupyter.org)" }
+    ],
+    "devops": [
+      { "name": "Terraform", "wingetId": "Hashicorp.Terraform", "enabled": true },
+      { "name": "kubectl", "wingetId": "Kubernetes.kubectl", "enabled": true },
+      { "name": "k9s", "wingetId": "Derailed.k9s", "enabled": true },
+      { "name": "Helm", "wingetId": "Helm.Helm", "enabled": true },
+      { "name": "AWS CLI", "wingetId": "Amazon.AWSCLI", "enabled": true },
+      { "name": "Azure CLI", "wingetId": "Microsoft.AzureCLI", "enabled": true },
+      { "name": "Google Cloud SDK (gcloud)", "wingetId": "Google.CloudSDK", "enabled": true }
+    ],
+    "database": [
+      { "name": "DBeaver Community", "wingetId": "DBeaver.DBeaver.Community", "enabled": true },
+      { "name": "PostgreSQL", "wingetId": "PostgreSQL.PostgreSQL", "enabled": true },
+      { "name": "SQLite", "wingetId": "SQLite.SQLite", "enabled": true },
+      { "name": "SQL Server 2022 Express", "wingetId": "Microsoft.SQLServer.2022.Express", "enabled": true },
+      { "name": "SQL Server Management Studio (SSMS)", "wingetId": "Microsoft.SQLServerManagementStudio", "enabled": true }
+    ],
+    "web": [
+      { "name": "Mozilla Firefox", "wingetId": "Mozilla.Firefox", "enabled": true },
+      { "name": "Google Chrome", "wingetId": "Google.Chrome", "enabled": true },
+      { "name": "Brave", "wingetId": "Brave.Brave", "enabled": true },
+      { "name": "Bruno (API client)", "wingetId": "Bruno.Bruno", "enabled": true },
+      { "name": "Postman", "wingetId": "Postman.Postman", "enabled": true },
+      { "name": "Visual Studio Code", "wingetId": "Microsoft.VisualStudioCode", "enabled": true }
+    ],
+    "security": [
+      { "name": "x64dbg (debugger)", "wingetId": "x64dbg.x64dbg", "enabled": true },
+      { "name": "Detect It Easy (DiE)", "wingetId": "horsicq.DIE-engine", "enabled": true },
+      { "name": "PE-bear", "wingetId": "hasherezade.PE-bear", "enabled": true },
+      { "name": "HxD (hex editor)", "wingetId": "MHNexus.HxD", "enabled": true },
+      { "name": "Resource Hacker", "wingetId": "AngusJohnson.ResourceHacker", "enabled": true },
+      { "name": "dnSpyEx (.NET decompiler)", "wingetId": "dnSpyEx.dnSpy", "enabled": true },
+      { "name": "ILSpy (.NET decompiler)", "wingetId": "icsharpcode.ILSpy", "enabled": true },
+      { "name": "System Informer", "wingetId": "WinsiderSS.SystemInformer", "enabled": true },
+      { "name": "YARA", "wingetId": "VirusTotal.YARA", "enabled": true },
+      { "name": "FLOSS (string deobfuscation)", "wingetId": "Mandiant.FLOSS", "enabled": true },
+      { "name": "Wireshark", "wingetId": "WiresharkFoundation.Wireshark", "enabled": true },
+      { "name": "mitmproxy", "wingetId": "mitmproxy.mitmproxy", "enabled": true },
+      { "name": "Ghidra (needs the JDK from the default profile)", "wingetId": "", "enabled": true, "source": "manual", "url": "https://github.com/NationalSecurityAgency/ghidra/releases" },
+      { "name": "PEStudio", "wingetId": "", "enabled": true, "source": "manual", "url": "https://www.winitor.com/download" },
+      { "name": "capa (capability detection)", "wingetId": "", "enabled": true, "source": "manual", "url": "https://github.com/mandiant/capa/releases" },
+      { "name": "CyberChef (offline HTML)", "wingetId": "", "enabled": true, "source": "manual", "url": "https://github.com/gchq/CyberChef/releases" },
+      { "name": "CFF Explorer", "wingetId": "", "enabled": true, "source": "manual", "url": "https://ntcore.com/?page_id=388" }
+    ],
+    "pentest": [
+      { "name": "Nmap", "wingetId": "Insecure.Nmap", "enabled": true },
+      { "name": "Wireshark", "wingetId": "WiresharkFoundation.Wireshark", "enabled": true },
+      { "name": "Burp Suite Community", "wingetId": "PortSwigger.BurpSuite.Community", "enabled": true },
+      { "name": "ffuf (web fuzzer)", "wingetId": "ffuf.ffuf", "enabled": true },
+      { "name": "sqlmap", "wingetId": "", "enabled": true, "source": "manual", "url": "pip install sqlmap  (https://sqlmap.org)" }
+    ]
+  }
 }

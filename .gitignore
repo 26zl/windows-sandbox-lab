@@ -2,6 +2,9 @@
 *.wsb
 scripts/tools.json
 
+# Pre-staged offline-mode artifacts (dropped into scripts/ by the user)
+scripts/sysmonconfig.xml
+
 # Binaries / installers
 *.exe
 *.msi

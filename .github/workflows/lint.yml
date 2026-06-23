@@ -5,14 +5,14 @@ on:
     paths:
       - "**/*.ps1"
       - "tools.json"
-      - "sandbox.wsb.template"
+      - "*.wsb.template"
       - ".github/workflows/lint.yml"
       - ".psscriptanalyzer.psd1"
   pull_request:
     paths:
       - "**/*.ps1"
       - "tools.json"
-      - "sandbox.wsb.template"
+      - "*.wsb.template"
       - ".github/workflows/lint.yml"
       - ".psscriptanalyzer.psd1"
 
@@ -64,17 +64,39 @@ jobs:
         run: |
           $config = Get-Content tools.json | ConvertFrom-Json
           $errors = @()
-          foreach ($tool in $config.tools) {
-            $missing = @()
-            if (-not $tool.PSObject.Properties['name']) { $missing += 'name' }
-            if (-not $tool.PSObject.Properties['wingetId']) { $missing += 'wingetId' }
-            if (-not $tool.PSObject.Properties['enabled']) { $missing += 'enabled' }
-            if ($missing.Count -gt 0) {
-              $errors += "Tool '$($tool.name)' missing keys: $($missing -join ', ')"
+          $count = 0
+
+          function Test-ToolGroup($group, $label) {
+            $groupErrors = @()
+            foreach ($tool in $group) {
+              $missing = @()
+              if (-not $tool.PSObject.Properties['name']) { $missing += 'name' }
+              if (-not $tool.PSObject.Properties['wingetId']) { $missing += 'wingetId' }
+              if (-not $tool.PSObject.Properties['enabled']) { $missing += 'enabled' }
+              # Non-winget tools must declare source=manual and a url
+              if ($tool.PSObject.Properties['wingetId'] -and -not $tool.wingetId) {
+                if ($tool.source -ne 'manual') { $missing += 'source=manual (empty wingetId)' }
+                if (-not $tool.url) { $missing += 'url (manual tool)' }
+              }
+              if ($missing.Count -gt 0) {
+                $groupErrors += "[$label] Tool '$($tool.name)' missing keys: $($missing -join ', ')"
+              }
             }
+            return $groupErrors
           }
+
+          if (-not $config.default) { $errors += "Missing 'default' tool array." }
+          $errors += Test-ToolGroup $config.default 'default'
+          $count += @($config.default).Count
+
+          foreach ($p in $config.profiles.PSObject.Properties) {
+            $errors += Test-ToolGroup $p.Value $p.Name
+            $count += @($p.Value).Count
+          }
+
           if ($errors.Count -gt 0) {
             $errors | ForEach-Object { Write-Host "ERROR: $_" -ForegroundColor Red }
             throw "$($errors.Count) validation error(s) found."
           }
-          Write-Host "tools.json is valid ($($config.tools.Count) tools defined)." -ForegroundColor Green
+          $profileNames = ($config.profiles.PSObject.Properties.Name -join ', ')
+          Write-Host "tools.json is valid ($count tools across default + profiles: $profileNames)." -ForegroundColor Green
