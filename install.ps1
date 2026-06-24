@@ -1,12 +1,12 @@
 # One-line bootstrap. Run in PowerShell:
-#   irm https://raw.githubusercontent.com/26zl/windows-sandbox-dev/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/26zl/windows-sandbox-lab/main/install.ps1 | iex
 #
 # Clones (or downloads) the repo to your user folder and runs setup.ps1 with the default
 # profile. For extra profiles, clone manually and run e.g. .\setup.ps1 -Profiles security
 
 $ErrorActionPreference = "Stop"
-$repo = "26zl/windows-sandbox-dev"
-$dest = Join-Path $env:USERPROFILE "windows-sandbox-dev"
+$repo = "26zl/windows-sandbox-lab"
+$dest = Join-Path $env:USERPROFILE "windows-sandbox-lab"
 
 function Move-ExistingDestination {
     if (-not (Test-Path $dest)) { return }
@@ -29,7 +29,7 @@ if (Get-Command git -ErrorAction SilentlyContinue) {
 }
 else {
     $zip = Join-Path $env:TEMP "wsb-dev.zip"
-    $expanded = Join-Path $env:TEMP "windows-sandbox-dev-main"
+    $expanded = Join-Path $env:TEMP "windows-sandbox-lab-main"
     Invoke-WebRequest -Uri "https://github.com/$repo/archive/refs/heads/main.zip" -OutFile $zip -UseBasicParsing
     Move-ExistingDestination
     if (Test-Path $expanded) { Remove-Item $expanded -Recurse -Force }

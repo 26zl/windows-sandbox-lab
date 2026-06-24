@@ -5,8 +5,8 @@
 > **watches what software does** (Sysmon + PowerShell logging + process auditing). Fresh every
 > session, isolated from your host, gone on close.
 
-![Lint](https://github.com/26zl/windows-sandbox-dev/actions/workflows/lint.yml/badge.svg)
-![License](https://img.shields.io/github/license/26zl/windows-sandbox-dev)
+![Lint](https://github.com/26zl/windows-sandbox-lab/actions/workflows/lint.yml/badge.svg)
+![License](https://img.shields.io/github/license/26zl/windows-sandbox-lab)
 ![Windows 11 Pro](https://img.shields.io/badge/Windows-11%20Pro-0078D6?logo=windows&logoColor=white)
 ![Tools via winget](https://img.shields.io/badge/tools-winget-success)
 
@@ -43,15 +43,15 @@ what ran inside it.
 **One-liner** (PowerShell):
 
 ```powershell
-irm https://raw.githubusercontent.com/26zl/windows-sandbox-dev/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/26zl/windows-sandbox-lab/main/install.ps1 | iex
 start sandbox.wsb
 ```
 
 **Or clone** (gives you profile selection):
 
 ```powershell
-git clone https://github.com/26zl/windows-sandbox-dev.git
-cd windows-sandbox-dev
+git clone https://github.com/26zl/windows-sandbox-lab.git
+cd windows-sandbox-lab
 .\setup.ps1                          # default dev toolchain
 start sandbox.wsb                    # winget installs everything automatically
 ```
