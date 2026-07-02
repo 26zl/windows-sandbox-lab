@@ -1,8 +1,5 @@
-# One-line bootstrap. Run in PowerShell:
+# Clones the repo into the user profile and runs the default setup from PowerShell:
 #   irm https://raw.githubusercontent.com/26zl/windows-sandbox-lab/main/install.ps1 | iex
-#
-# Clones (or downloads) the repo to your user folder and runs setup.ps1 with the default
-# profile. For extra profiles, clone manually and run e.g. .\setup.ps1 -Profiles security
 
 $ErrorActionPreference = "Stop"
 $repo = "26zl/windows-sandbox-lab"

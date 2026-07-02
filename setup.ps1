@@ -1,6 +1,4 @@
-# Setup script - run once before launching the sandbox.
-#   1. Resolves the default toolchain + any requested profiles into scripts/tools.json
-#   2. Generates sandbox.wsb from the template (networking/clipboard toggled for -Offline)
+# Resolves tool profiles into scripts/tools.json and generates sandbox.wsb before launch.
 #
 # Examples:
 #   .\setup.ps1                                # default dev toolchain
@@ -48,11 +46,10 @@ $requestedProfiles = $Profiles |
     Where-Object { $_ } |
     Select-Object -Unique
 
-# Default toolchain first, then each requested profile appended.
 $selected = [System.Collections.Generic.List[object]]::new()
 foreach ($t in $config.default) { $selected.Add($t) }
 
-# Validate names explicitly ($config.profiles.$name returns member values like Count, not $null)
+# Validate requested profile names.
 $validProfiles = $config.profiles.PSObject.Properties.Name
 foreach ($name in $requestedProfiles) {
     if ($validProfiles -notcontains $name) {
@@ -62,23 +59,20 @@ foreach ($name in $requestedProfiles) {
     foreach ($t in $config.profiles.$name) { $selected.Add($t) }
 }
 
-# De-duplicate by wingetId (fall back to name for manual tools).
 $seen = [System.Collections.Generic.HashSet[string]]::new()
 $resolved = foreach ($t in $selected) {
     $key = if ($t.wingetId) { $t.wingetId } else { $t.name }
     if ($seen.Add($key)) { $t }
 }
 
-# Write UTF-8 WITHOUT BOM (Windows PowerShell 5.1's "-Encoding UTF8" adds a BOM, which can
-# break the .wsb parser; .NET's WriteAllText with UTF8Encoding($false) is BOM-less everywhere).
+# Write BOM-less UTF-8 for the .wsb parser.
 $utf8NoBom = New-Object System.Text.UTF8Encoding $false
 
 $resolvedJson = @{ tools = @($resolved) } | ConvertTo-Json -Depth 6
 $toolsOut = [System.IO.Path]::Combine($PSScriptRoot, 'scripts', 'tools.json')
 [System.IO.File]::WriteAllText($toolsOut, $resolvedJson, $utf8NoBom)
 
-# XML-escape the host path so a clone path containing '&' does not corrupt the .wsb.
-# Offline mode disables networking + clipboard and passes -Offline to the launcher.
+# Generate sandbox settings and escape the host path for XML.
 $escapedRoot = [System.Security.SecurityElement]::Escape($PSScriptRoot)
 $networking = if ($Offline) { 'Disable' } else { 'Enable' }
 $clipboard = if ($Offline) { 'Disable' } else { 'Enable' }

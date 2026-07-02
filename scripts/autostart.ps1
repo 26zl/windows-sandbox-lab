@@ -1,6 +1,4 @@
-# Windows Sandbox auto-setup script.
-# Installs tools from tools.json and configures monitoring. Pass -Offline for the
-# network-disabled variant (no winget; pre-stage tools + sysmonconfig.xml in scripts/).
+# Configures monitoring and installs tools from tools.json in Windows Sandbox.
 param([switch]$Offline)
 
 $ErrorActionPreference = "Continue"
@@ -38,8 +36,7 @@ function Assert-ExitCode {
     }
 }
 
-# Wait for network before starting (LogonCommand can run before network is ready).
-# Probe HTTPS, not ICMP (Sandbox NAT often blocks ping). Skipped in offline mode.
+# Wait for HTTPS connectivity before online setup.
 if ($Offline) {
     Write-SetupLog "INFO" "Offline mode - network and winget steps skipped"
 }
@@ -54,7 +51,7 @@ else {
             break
         }
         catch {
-            # any HTTP response means the network is up
+            # Any HTTP response confirms connectivity.
             if ($_.Exception.Response) { $networkUp = $true; break }
         }
         Start-Sleep -Seconds 2
@@ -265,7 +262,6 @@ catch {
 if (-not $Offline) {
     Write-SetupLog "INFO" "=== Phase 2: Installing winget ==="
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-        # retry the bootstrap on transient network failures
         $bootstrapped = $false
         for ($attempt = 1; $attempt -le 3 -and -not $bootstrapped; $attempt++) {
             try {
@@ -313,7 +309,6 @@ $failedTools = @()
 $manualTools = @()
 
 if ($Offline) {
-    # No winget offline - just list what to pre-stage on the host.
     Write-SetupLog "INFO" "=== Phase 3: Tools to pre-stage (no network) ==="
     foreach ($t in $enabledTools) {
         $hint = if ($t.url) { $t.url } elseif ($t.wingetId) { "winget id: $($t.wingetId) (download installer on host)" } else { "" }
@@ -322,7 +317,6 @@ if ($Offline) {
 }
 else {
     Write-SetupLog "INFO" "=== Phase 3: Tool installation ==="
-    # manual tools (no winget package) are listed at the end, not installed
     $manualTools = @($enabledTools | Where-Object { $_.source -eq 'manual' -or -not $_.wingetId })
     $tools = @($enabledTools | Where-Object { $_.source -ne 'manual' -and $_.wingetId })
     $total = $tools.Count
@@ -330,7 +324,6 @@ else {
 
     foreach ($tool in $tools) {
         $current++
-        # flag long installs (e.g. Build Tools) so they aren't mistaken for a hang
         $note = if ($tool.override) { " (large install - several minutes, no output is normal)" } else { "" }
         Write-SetupLog "INFO" "[$current/$total] $($tool.name)...$note"
 
@@ -352,7 +345,7 @@ else {
                     else { Write-SetupLog "OK" "$($tool.name) already installed" }
                     $succeeded++; $installed = $true; break
                 }
-                # non-zero can still mean "installed, reboot required" - confirm with an exact list lookup
+                # Confirm package presence after a non-zero install result.
                 & winget list --id $tool.wingetId --exact --source winget --accept-source-agreements 2>&1 | Out-Null
                 if ($LASTEXITCODE -eq 0) {
                     Write-SetupLog "OK" "$($tool.name) installed (winget exit $lastCode; package present, reboot flag ignored)"
@@ -403,7 +396,7 @@ else {
         $sysmonConfig = $null
         $sysmonConfigValid = $false
         if ($Offline) {
-            # use a pre-staged config from scripts/ if present (read-only mapped folder)
+            # Use a pre-staged config when available.
             $sysmonConfig = Join-Path $scriptDir "sysmonconfig.xml"
             $sysmonConfigValid = Test-Path $sysmonConfig
         }
@@ -418,7 +411,6 @@ else {
                     Invoke-WebRequest -Uri $sysmonConfigUrl -OutFile $sysmonConfig -UseBasicParsing -TimeoutSec 30 -ErrorAction Stop
                     $actualHash = (Get-FileHash -Path $sysmonConfig -Algorithm SHA256).Hash
                     if ($actualHash -ne $sysmonConfigExpectedHash) {
-                        # hash mismatch - don't retry a changed file
                         Write-SetupLog "FAIL" "Sysmon config hash mismatch: expected=$sysmonConfigExpectedHash actual=$actualHash"
                         $setupErrors++
                         break
@@ -433,10 +425,7 @@ else {
             }
         }
 
-        # Apply config with the on-PATH sysmon. Use the verified/pre-staged config if we have
-        # one, else Sysmon's own default ruleset so monitoring still runs. Guard on Get-Command
-        # (a command-not-found would NOT update $LASTEXITCODE -> stale value = false success),
-        # and try with -accepteula first, then without (the built-in build may reject it).
+        # Apply the verified or pre-staged config when available.
         if (-not (Get-Command sysmon -ErrorAction SilentlyContinue)) {
             Write-SetupLog "FAIL" "Sysmon feature enabled but sysmon.exe not found on PATH"
             $setupErrors++
@@ -483,7 +472,7 @@ if ($manualTools.Count -gt 0) {
     }
 }
 Write-SetupLog "INFO" "Log: $logFile"
-# "ready" depends only on tool installs, so optional hardening issues don't hide it
+# Report readiness from tool-install results.
 if ($Offline) {
     Write-SetupLog "INFO" "=== Offline sandbox ready (network disabled) ==="
 }
