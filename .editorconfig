@@ -1,0 +1,19 @@
+# Matches the files in the repository: four-space PowerShell and psd1,
+# two-space YAML, JSON, Markdown and the .wsb template, UTF-8 without BOM, a
+# final newline, LF everywhere except scripts/launch.cmd, which .gitattributes
+# keeps CRLF for cmd.exe.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{yml,yaml,json,md,template,wsb}]
+indent_size = 2
+
+[*.{cmd,bat}]
+end_of_line = crlf
