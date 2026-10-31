@@ -43,3 +43,6 @@ desktop.ini
 # Temp / logs
 *.log
 *.tmp
+
+# Written by Invoke-Pester -CI
+testResults.xml
